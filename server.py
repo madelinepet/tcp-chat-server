@@ -52,7 +52,7 @@ class ChatServer(threading.Thread):
                         i.update_nickname(data[1])
                         reply = 'Username updated to ' + data[1] + ' \n'
                         [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
-                        # return(i.nick)
+                        return(i.nick)
 
             # if data[0] == '@dm':
             #     self.client_pool.nick = data[1]
@@ -60,17 +60,21 @@ class ChatServer(threading.Thread):
 
             else:
                 conn.sendall(b'Invalid command. Please try again.\n')
+                return('')
 
         else:
             reply = nick.encode() + b': ' + message
             [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
+            return('')
 
     def run_thread(self, id, nick, conn, addr):
         print('{} connected with {}:{}'.format(nick, addr[0], str(addr[1])))
         try:
             while True:
                 data = conn.recv(4096)
-                self.parser(id, nick, conn, data)
+                parsed_nickname = self.parser(id, nick, conn, data)
+                if len(parsed_nickname):
+                    nick = parsed_nickname
         except (ConnectionResetError, BrokenPipeError, OSError):
             conn.close()
 
