@@ -43,7 +43,7 @@ class ChatServer(threading.Thread):
                 reply = ''
                 for c in self.client_pool:
                     reply += c.nick + ' \n'
-                    [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
+                [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
                 return('')
 
             if data[0] == '@nickname':
