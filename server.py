@@ -44,6 +44,7 @@ class ChatServer(threading.Thread):
                 for c in self.client_pool:
                     reply += c.nick + ' \n'
                     [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
+                return('')
 
             if data[0] == '@nickname':
                 for i in self.client_pool:
