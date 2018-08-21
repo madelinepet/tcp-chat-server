@@ -50,13 +50,9 @@ class ChatServer(threading.Thread):
             if data[0] == '@nickname':
                 for i in self.client_pool:
                     if i.id == id:
-                        i.nick = ''
-                        i.nick = data[1]
-                        reply = 'Username updated to ' + nick + ' \n'
+                        i.update_nickname(data[1])
+                        reply = 'Username updated to ' + data[1] + ' \n'
                         [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
-                        # return[i]
-                        self.client_pool = [c for c in self.client_pool if c.id != id]
-                        self.client_pool.append(i)
                         return(i.nick)
 
             # if data[0] == '@dm':
