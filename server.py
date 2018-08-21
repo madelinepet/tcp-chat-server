@@ -39,42 +39,38 @@ class ChatServer(threading.Thread):
                 self.client_pool = [c for c in self.client_pool if c.id != id]
                 conn.close()
 
-            if data[0] == '@list':
+            elif data[0] == '@list':
                 reply = ''
                 for c in self.client_pool:
-                    reply += c.nick + ' \n'
+                    reply += c.nick
                 [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
-                return('')
 
-            if data[0] == '@nickname':
+            elif data[0] == '@nickname':
                 for i in self.client_pool:
                     if i.id == id:
                         i.update_nickname(data[1])
                         reply = 'Username updated to ' + data[1] + ' \n'
                         [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
-                        return(i.nick)
 
-            # if data[0] == '@dm':
-            #     self.client_pool.nick = data[1]
-            #     data[2]
+            elif data[0] == '@dm':
+                for i in self.client_pool:
+                    data = message.decode().split(maxsplit=2)
+                    if i.nick.rstrip() == data[1]:
+                        i.conn.sendall(data[2].encode())
 
             else:
                 conn.sendall(b'Invalid command. Please try again.\n')
-                return('')
-
         else:
             reply = nick.encode() + b': ' + message
             [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
-            return('')
+            # return('')
 
     def run_thread(self, id, nick, conn, addr):
         print('{} connected with {}:{}'.format(nick, addr[0], str(addr[1])))
         try:
             while True:
                 data = conn.recv(4096)
-                parsed_nickname = self.parser(id, nick, conn, data)
-                if len(parsed_nickname):
-                    nick = parsed_nickname
+                self.parser(id, nick, conn, data)
         except (ConnectionResetError, BrokenPipeError, OSError):
             conn.close()
 
