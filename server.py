@@ -38,19 +38,26 @@ class ChatServer(threading.Thread):
                 [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
                 self.client_pool = [c for c in self.client_pool if c.id != id]
                 conn.close()
+                return('')
 
             if data[0] == '@list':
                 reply = ''
                 for c in self.client_pool:
-                    reply += c.nick
+                    reply += c.nick + ' \n'
                     [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
+                    return('')
 
             if data[0] == '@nickname':
                 for i in self.client_pool:
                     if i.id == id:
+                        i.nick = ''
                         i.nick = data[1]
-                        reply = 'Username updated to ' + nick
+                        reply = 'Username updated to ' + nick + ' \n'
                         [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
+                        # return[i]
+                        self.client_pool = [c for c in self.client_pool if c.id != id]
+                        self.client_pool.append(i)
+                        return(i.nick)
 
             # if data[0] == '@dm':
             #     self.client_pool.nick = data[1]
@@ -58,17 +65,21 @@ class ChatServer(threading.Thread):
 
             else:
                 conn.sendall(b'Invalid command. Please try again.\n')
+                return('')
 
         else:
             reply = nick.encode() + b': ' + message
             [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
+            return('')
 
     def run_thread(self, id, nick, conn, addr):
         print('{} connected with {}:{}'.format(nick, addr[0], str(addr[1])))
         try:
             while True:
                 data = conn.recv(4096)
-                self.parser(id, nick, conn, data)
+                parsed_nickname = self.parser(id, nick, conn, data)
+                if len(parsed_nickname):
+                    nick = parsed_nickname
         except (ConnectionResetError, BrokenPipeError, OSError):
             conn.close()
 
