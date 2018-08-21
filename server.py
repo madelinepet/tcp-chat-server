@@ -40,14 +40,17 @@ class ChatServer(threading.Thread):
                 conn.close()
 
             if data[0] == '@list':
-                reply = b'jjjjj'
+                reply = ''
                 for c in self.client_pool:
-                    reply += b' ' + c.nick
-                    # reply += b': ' + c_name
-                c.conn.sendall(reply)
+                    reply += c.nick
+                    [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
 
-            # if data[0] == '@nickname':
-            #     self.client_pool.nick = data[1]
+            if data[0] == '@nickname':
+                for i in self.client_pool:
+                    if i.id == id:
+                        i.nick = data[1]
+                        reply = 'Username updated to ' + nick
+                        [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
 
             # if data[0] == '@dm':
             #     self.client_pool.nick = data[1]
