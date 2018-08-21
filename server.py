@@ -1,11 +1,11 @@
-
-from .client import ChatClient
+#! /usr/local/bin/python3
+from client import ChatClient
 import threading
 import socket
 import sys
 
 
-PORT = 4444
+PORT = 9876
 
 
 class ChatServer(threading.Thread):
@@ -38,6 +38,20 @@ class ChatServer(threading.Thread):
                 [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
                 self.client_pool = [c for c in self.client_pool if c.id != id]
                 conn.close()
+
+            if data[0] == '@list':
+                reply = b'jjjjj'
+                for c in self.client_pool:
+                    reply += b' ' + c.nick
+                    # reply += b': ' + c_name
+                c.conn.sendall(reply)
+
+            # if data[0] == '@nickname':
+            #     self.client_pool.nick = data[1]
+
+            # if data[0] == '@dm':
+            #     self.client_pool.nick = data[1]
+            #     data[2]
 
             else:
                 conn.sendall(b'Invalid command. Please try again.\n')
