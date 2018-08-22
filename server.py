@@ -59,6 +59,7 @@ class ChatServer(threading.Thread):
                     data = message.decode().split(maxsplit=2)
                     if i.nick.rstrip() == data[1]:
                         i.conn.sendall(data[2].encode())
+                        return(i.nick)
 
             else:
                 conn.sendall(b'Invalid command. Please try again.\n')
