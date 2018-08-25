@@ -10,6 +10,8 @@ PORT = 9876
 
 class ChatServer(threading.Thread):
     def __init__(self, port, host='localhost'):
+        """ Initializes the class
+        """
         super().__init__(daemon=True)
         self.port = port
         self.host = host
@@ -29,24 +31,26 @@ class ChatServer(threading.Thread):
         self.server.listen(10)
 
     def parser(self, id, nick, conn, message):
-        if message.decode().startswith('@'):
+        """ parses the message out to look for keywords
+        """
+        if message.decode().startswith('/'):
             data = message.decode().split(maxsplit=1)
 
-            if data[0] == '@quit':
+            if data[0] == '/quit':
                 conn.sendall(b'You have left the chat.')
                 reply = nick.encode() + b'has left the channel.\n'
                 [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
                 self.client_pool = [c for c in self.client_pool if c.id != id]
                 conn.close()
 
-            if data[0] == '@list':
+            if data[0] == '/list':
                 reply = ''
                 for c in self.client_pool:
                     reply += c.nick + ' \n'
                 [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
                 return('')
 
-            if data[0] == '@nickname':
+            if data[0] == '/nickname':
                 for i in self.client_pool:
                     if i.id == id:
                         i.update_nickname(data[1])
@@ -54,7 +58,7 @@ class ChatServer(threading.Thread):
                         [c.conn.sendall(reply.encode()) for c in self.client_pool if len(self.client_pool)]
                         return(i.nick)
 
-            elif data[0] == '@dm':
+            elif data[0] == '/dm':
                 for i in self.client_pool:
                     data = message.decode().split(maxsplit=2)
                     if i.nick.rstrip() == data[1]:
@@ -71,6 +75,8 @@ class ChatServer(threading.Thread):
             return('')
 
     def run_thread(self, id, nick, conn, addr):
+        """ changes the nickname and establishes connection
+        """
         print('{} connected with {}:{}'.format(nick, addr[0], str(addr[1])))
         try:
             while True:
@@ -82,6 +88,8 @@ class ChatServer(threading.Thread):
             conn.close()
 
     def run(self):
+        """ Runs the server
+        """
         print('Server running on {}'.format(PORT))
         while True:
             conn, addr = self.server.accept()
@@ -94,6 +102,8 @@ class ChatServer(threading.Thread):
             ).start()
 
     def exit(self):
+        """ Politely closes the connection
+        """
         self.server.close()
 
 
